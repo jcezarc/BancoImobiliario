@@ -46,7 +46,7 @@ class Jogador(Sequencia):
         self.saldo = 300
         self.posicao = None
         self.turno = 0
-    def decide_compra(propriedade):
+    def decide_compra(self, propriedade):
         deve_comprar = self.comportamento.deve_comprar(
             propriedade,
             self
@@ -54,11 +54,11 @@ class Jogador(Sequencia):
         if deve_comprar:
             self.saldo -= propriedade.valor_venda
             propriedade.dono = self
-    def paga_aluguel(propriedade):
+    def paga_aluguel(self, propriedade):
         valor = propriedade.valor_aluguel
         self.saldo -= valor
         propriedade.dono.ganha_bonus(valor)
-    def ganha_bonus(valor):
+    def ganha_bonus(self, valor):
         self.saldo += valor
     def move(self, movimento, jogo):
         """
@@ -89,26 +89,26 @@ class Jogador(Sequencia):
 
 #-------- Comportamentos ------------------
 class Impulsivo:
-    def deve_comprar(propriedade, jogador):
+    def deve_comprar(self, propriedade, jogador):
         return True
     def descricao(self):
         return 'Impulsivo'
 
 class Exigente:
-    def deve_comprar(propriedade, jogador):
+    def deve_comprar(self, propriedade, jogador):
         return propriedade.valor_aluguel > 50
     def descricao(self):
         return 'Exigente'
 
 class Cauteloso:
-    def deve_comprar(propriedade, jogador):
-        reserva = self.saldo - propriedade.valor_venda
+    def deve_comprar(self, propriedade, jogador):
+        reserva = jogador.saldo - propriedade.valor_venda
         return reserva >= 80
     def descricao(self):
         return 'Cauteloso'
 
 class Aleatorio:
-    def deve_comprar(propriedade, jogador):
+    def deve_comprar(self, propriedade, jogador):
         return bool(random.getrandbits(1))
     def descricao(self):
         return 'Aleatorio'
@@ -138,37 +138,37 @@ class Jogo:
         ])
         self.jogador = jogador_atual
         self.jogadores_ativos = jogadores
-        def rodada_completa(self, turno_atual):
-            for jogador in self.jogadores_ativos:
-                if jogador.turno != turno_atual:
-                    return False
-            return True
-        def proximo_turno(self):
-            if not self.jogadores_ativos:
-                raise Exception('Nenhum jogador ativo')
-            elif len(self.jogadores_ativos) == 1:
-                return self.encerra_jogo('Restou só 1 jogador')
-            self.jogador.move(random.randint(1, 6), self)
-            self.jogador.turno = self.jogador.turno + 1
-            if self.rodada_completa(self.jogador.turno):
-                self.rodadas += 1
-                if self.rodadas > 999:
-                    return self.encerra_jogo('Time out')
-            self.jogador = self.jogador.proximo
-            return None
-        def remove_jogador(self, perdedor):
-            self.jogadores_ativos.remove(perdedor)
-            for casa in self.tabuleiro:
-                if casa.dono == perdedor:
-                    casa.dono = None
-            perdedor.anterior.liga_com(perdedor.proximo)
-        def encerra_jogo(self, motivo):
-            vencedor = None
-            for jogador in self.jogadores_ativos:
-                if not vencedor or jogador.saldo > vencedor.saldo:
-                    vencedor = jogador
-            self.motivo = motivo
-            return vencedor
+    def rodada_completa(self, turno_atual):
+        for jogador in self.jogadores_ativos:
+            if jogador.turno != turno_atual:
+                return False
+        return True
+    def proximo_turno(self):
+        if not self.jogadores_ativos:
+            raise Exception('Nenhum jogador ativo')
+        elif len(self.jogadores_ativos) == 1:
+            return self.encerra_jogo('Restou só 1 jogador')
+        self.jogador.move(random.randint(1, 6), self)
+        self.jogador.turno = self.jogador.turno + 1
+        if self.rodada_completa(self.jogador.turno):
+            self.rodadas += 1
+            if self.rodadas > 999:
+                return self.encerra_jogo('Time out')
+        self.jogador = self.jogador.proximo
+        return None
+    def remove_jogador(self, perdedor):
+        self.jogadores_ativos.remove(perdedor)
+        for casa in self.tabuleiro:
+            if casa.dono == perdedor:
+                casa.dono = None
+        perdedor.anterior.liga_com(perdedor.proximo)
+    def encerra_jogo(self, motivo):
+        vencedor = None
+        for jogador in self.jogadores_ativos:
+            if not vencedor or jogador.saldo > vencedor.saldo:
+                vencedor = jogador
+        self.motivo = motivo
+        return vencedor
 
 def executua_simulacoes(qt_jogos=300):
     resumo = {}
@@ -188,3 +188,5 @@ def executua_simulacoes(qt_jogos=300):
     print(resumo)
     print('-'*50)
     print('Média de turnos: ', media_turnos)
+
+executua_simulacoes(300)
