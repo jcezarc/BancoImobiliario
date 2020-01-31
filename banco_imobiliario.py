@@ -169,7 +169,7 @@ class Jogo:
         self.motivo = motivo
         return vencedor
 
-def executua_simulacoes(qt_jogos=300):
+def executa_simulacoes(qt_jogos=300):
     partidas = {}
     vitorias = {}
     soma_turnos = 0
@@ -205,4 +205,4 @@ def executua_simulacoes(qt_jogos=300):
     print('\tTipo que mais venceu = ', melhor)
     print('-'*50)
 
-executua_simulacoes(300)
+executa_simulacoes(300)
