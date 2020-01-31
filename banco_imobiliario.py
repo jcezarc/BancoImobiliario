@@ -80,40 +80,31 @@ class Jogador(Sequencia):
         self.posicao = casa
         if casa == jogo.primeira_casa:
             self.ganha_bonus(100) #--- Completou uma volta!
-        if casa.dono is None:
-            if self.saldo < casa.valor_venda:
-                return
-            self.decide_compra(casa)
-        else:
+        if casa.dono:
             self.paga_aluguel(casa)
             if self.saldo < 0:
                 jogo.remove_jogador(self)
+        elif self.saldo >= casa.valor_venda:
+            self.decide_compra(casa)
+
 
 #-------- Comportamentos ------------------
 class Impulsivo:
     def deve_comprar(self, propriedade, jogador):
         return True
-    def descricao(self):
-        return 'Impulsivo'
 
 class Exigente:
     def deve_comprar(self, propriedade, jogador):
         return propriedade.valor_aluguel > 50
-    def descricao(self):
-        return 'Exigente'
 
 class Cauteloso:
     def deve_comprar(self, propriedade, jogador):
         reserva = jogador.saldo - propriedade.valor_venda
         return reserva >= 80
-    def descricao(self):
-        return 'Cauteloso'
 
 class Aleatorio:
     def deve_comprar(self, propriedade, jogador):
         return bool(random.getrandbits(1))
-    def descricao(self):
-        return 'Aleatorio'
 #--------------------------------------------
 
 class Jogo:
@@ -189,7 +180,7 @@ def executua_simulacoes(qt_jogos=300):
             vencedor = jogo.proximo_turno()
         soma_turnos += vencedor.turno
         partidas[jogo.motivo] = partidas.get(jogo.motivo, 0) + 1
-        tipo_jogador = vencedor.comportamento.descricao()
+        tipo_jogador = vencedor.comportamento.__class__.__name__
         vitorias[tipo_jogador] = vitorias.get(tipo_jogador, 0) + 1
     media_turnos = soma_turnos / qt_jogos
     print('='*50)
