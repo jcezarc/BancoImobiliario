@@ -2,7 +2,11 @@ import random
 
 class Sequencia:
     def __init__(self):
-        self.proximo = None 
+        self.anterior = None
+        self.proximo = None
+    def liga_com(self, outro):
+        self.proximo = outro
+        outro.anterior = self
     @classmethod
     def get_sequencia(cls, iteracoes):
         primeiro = None
@@ -13,10 +17,10 @@ class Sequencia:
             if primeiro is None:
                 primeiro = elemento
             if ultimo:
-                ultimo.proximo = elemento
+                ultimo.liga_com(elemento)
             ultimo = elemento
             lista.append(elemento)
-        ultimo.proximo = primeiro
+        ultimo.liga_com(primeiro)
         return primeiro, lista
 
 class Propriedade(Sequencia):
@@ -26,7 +30,7 @@ class Propriedade(Sequencia):
     :numero é como se fosse a numeração da rua 
             (para debug/logging...)
     :valor_venda recebe um valor qualquer, apenas como exemplo
-    :valor_aluguel  vale 0.5% do `valor_venda`
+    :valor_aluguel  recebe um valor parecido, só que menor..
     """
     def __init__(self, numero):
         super().__init__()
@@ -41,6 +45,7 @@ class Jogador(Sequencia):
         self.comportamento = comportamento()
         self.saldo = 300
         self.posicao = None
+        self.turno = 0
     def decide_compra(propriedade):
         deve_comprar = self.comportamento.deve_comprar(
             propriedade,
@@ -86,19 +91,27 @@ class Jogador(Sequencia):
 class Impulsivo:
     def deve_comprar(propriedade, jogador):
         return True
+    def descricao(self):
+        return 'Impulsivo'
 
 class Exigente:
     def deve_comprar(propriedade, jogador):
         return propriedade.valor_aluguel > 50
+    def descricao(self):
+        return 'Exigente'
 
 class Cauteloso:
     def deve_comprar(propriedade, jogador):
         reserva = self.saldo - propriedade.valor_venda
         return reserva >= 80
+    def descricao(self):
+        return 'Cauteloso'
 
 class Aleatorio:
     def deve_comprar(propriedade, jogador):
         return bool(random.getrandbits(1))
+    def descricao(self):
+        return 'Aleatorio'
 #--------------------------------------------
 
 class Jogo:
@@ -110,7 +123,8 @@ class Jogo:
         Um impulsivo, um exigente, um cauteloso
         e um de comportamento aleatório
         """
-        self.turnos = 0
+        self.rodadas = 0
+        self.motivo = ''
         casa, tabuleiro = Propriedade.get_sequencia(
             range(20)
         )
@@ -124,23 +138,53 @@ class Jogo:
         ])
         self.jogador = jogador_atual
         self.jogadores_ativos = jogadores
+        def rodada_completa(self, turno_atual):
+            for jogador in self.jogadores_ativos:
+                if jogador.turno != turno_atual:
+                    return False
+            return True
         def proximo_turno(self):
             if not self.jogadores_ativos:
                 raise Exception('Nenhum jogador ativo')
+            elif len(self.jogadores_ativos) == 1:
+                return self.encerra_jogo('Restou só 1 jogador')
             self.jogador.move(random.randint(1, 6), self)
+            self.jogador.turno = self.jogador.turno + 1
+            if self.rodada_completa(self.jogador.turno):
+                self.rodadas += 1
+                if self.rodadas > 999:
+                    return self.encerra_jogo('Time out')
             self.jogador = self.jogador.proximo
-            self.turnos += 1
+            return None
         def remove_jogador(self, perdedor):
             self.jogadores_ativos.remove(perdedor)
             for casa in self.tabuleiro:
                 if casa.dono == perdedor:
                     casa.dono = None
-        def encerra_jogo(self):
+            perdedor.anterior.liga_com(perdedor.proximo)
+        def encerra_jogo(self, motivo):
             vencedor = None
             for jogador in self.jogadores_ativos:
                 if not vencedor or jogador.saldo > vencedor.saldo:
                     vencedor = jogador
+            self.motivo = motivo
             return vencedor
 
-def executua_simulacao():
-    jogo = Jogo()
+def executua_simulacoes(qt_jogos=300):
+    resumo = {}
+    soma_turnos = 0
+    for i in range(qt_jogos):
+        jogo = Jogo()
+        vencedor = None
+        while not vencedor:
+            vencedor = jogo.proximo_turno()
+        soma_turnos += vencedor.turno
+        resumo[jogo.motivo] = resumo.get(jogo.motivo, 0) + 1
+        tipo_jogador = vencedor.comportamento.descricao
+        resumo[tipo_jogador] = resumo.get(tipo_jogador, 0) + 1
+    media_turnos = soma_turnos / qt_jogos
+    print('='*50)
+    print('\tEstatísticas:')
+    print(resumo)
+    print('-'*50)
+    print('Média de turnos: ', media_turnos)
