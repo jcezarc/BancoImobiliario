@@ -1,5 +1,7 @@
 import random
 
+LIMITE_RODADAS = 1000
+
 class Sequencia:
     def __init__(self):
         self.anterior = None
@@ -147,13 +149,14 @@ class Jogo:
         if not self.jogadores_ativos:
             raise Exception('Nenhum jogador ativo')
         elif len(self.jogadores_ativos) == 1:
-            return self.encerra_jogo('Restou só 1 jogador')
+            return self.encerra_jogo('WO')
+            #      ^^^---- vitória por W.O.
         self.jogador.move(random.randint(1, 6), self)
         self.jogador.turno = self.jogador.turno + 1
         if self.rodada_completa(self.jogador.turno):
             self.rodadas += 1
-            if self.rodadas > 999:
-                return self.encerra_jogo('Time out')
+            if self.rodadas >= LIMITE_RODADAS:
+                return self.encerra_jogo('TimeOut')
         self.jogador = self.jogador.proximo
         return None
     def remove_jogador(self, perdedor):
@@ -163,6 +166,11 @@ class Jogo:
                 casa.dono = None
         perdedor.anterior.liga_com(perdedor.proximo)
     def encerra_jogo(self, motivo):
+        """
+        `jogadores_ativos` está em ordem de turno
+        portanto o primeiro a ser aclamado vencedor
+        tem precedência sobre outro com saldo empatado.
+        """
         vencedor = None
         for jogador in self.jogadores_ativos:
             if not vencedor or jogador.saldo > vencedor.saldo:
@@ -171,7 +179,8 @@ class Jogo:
         return vencedor
 
 def executua_simulacoes(qt_jogos=300):
-    resumo = {}
+    partidas = {}
+    vitorias = {}
     soma_turnos = 0
     for i in range(qt_jogos):
         jogo = Jogo()
@@ -179,14 +188,30 @@ def executua_simulacoes(qt_jogos=300):
         while not vencedor:
             vencedor = jogo.proximo_turno()
         soma_turnos += vencedor.turno
-        resumo[jogo.motivo] = resumo.get(jogo.motivo, 0) + 1
-        tipo_jogador = vencedor.comportamento.descricao
-        resumo[tipo_jogador] = resumo.get(tipo_jogador, 0) + 1
+        partidas[jogo.motivo] = partidas.get(jogo.motivo, 0) + 1
+        tipo_jogador = vencedor.comportamento.descricao()
+        vitorias[tipo_jogador] = vitorias.get(tipo_jogador, 0) + 1
     media_turnos = soma_turnos / qt_jogos
     print('='*50)
-    print('\tEstatísticas:')
-    print(resumo)
+    print('SIMULAÇÃO DE BANCO IMOBILIÁRIO')
     print('-'*50)
-    print('Média de turnos: ', media_turnos)
+    print(
+        '\tPartidas que terminara em Time Out = ',
+        partidas.get('TimeOut', 0)
+    )
+    print('\tMédia de turnos = {:.2f}'.format(media_turnos))
+    print('\tVitorias por tipo:')
+    melhor = None
+    for tipo in vitorias:
+        porcentagem = vitorias[tipo] / qt_jogos * 100
+        if not melhor or porcentagem > vitorias[melhor]:
+            melhor = tipo
+        print('\t\t {} = {:.2f}%'.format(
+            tipo,
+            porcentagem
+        ))
+        vitorias[tipo] = porcentagem
+    print('\tTipo que mais venceu = ', melhor)
+    print('-'*50)
 
 executua_simulacoes(300)
