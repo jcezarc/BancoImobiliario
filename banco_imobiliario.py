@@ -145,7 +145,7 @@ class Jogo:
             return self.encerra_jogo('WO')
             #      ^^^---- vitória por W.O.
         self.jogador.move(random.randint(1, 6), self)
-        self.jogador.turno = self.jogador.turno + 1
+        self.jogador.turno += 1
         if self.rodada_completa(self.jogador.turno):
             self.rodadas += 1
             if self.rodadas >= LIMITE_RODADAS:
