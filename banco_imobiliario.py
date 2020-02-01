@@ -71,7 +71,7 @@ class Jogador(Sequencia):
         ...
         Quanto ao movimento casa-por-casa,
         apesar de menos elegante, pode permitir
-        futuras variações como `pedágio`
+        eventos que ocorrem `ao passar` por uma casa
         """
         casa = self.posicao
         if casa is None:
