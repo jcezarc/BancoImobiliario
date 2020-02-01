@@ -78,10 +78,10 @@ class Jogador(Sequencia):
             casa = jogo.primeira_casa
         while movimento:
             casa = casa.proximo
+            if casa == jogo.primeira_casa:
+                self.ganha_bonus(100) #--- Completou uma volta!
             movimento -=  1
         self.posicao = casa
-        if casa == jogo.primeira_casa:
-            self.ganha_bonus(100) #--- Completou uma volta!
         if casa.dono:
             if casa.dono == self:
                 return
