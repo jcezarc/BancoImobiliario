@@ -1,33 +1,20 @@
 import random
 
 LIMITE_RODADAS = 1000
+CASAS_TABULEIRO = 20
 
-class Sequencia:
-    def __init__(self):
-        self.anterior = None
-        self.proximo = None
-    def liga_com(self, outro):
-        self.proximo = outro
-        outro.anterior = self
+class ItemJogo:
     @classmethod
-    def get_sequencia(cls, iteracoes):
-        primeiro = None
-        ultimo = None
+    def get_elementos(cls, iteracoes):
         if isinstance(iteracoes, list):
             random.shuffle(iteracoes)
         lista = []
         for item in iteracoes:
             elemento = cls(item)
-            if primeiro is None:
-                primeiro = elemento
-            if ultimo:
-                ultimo.liga_com(elemento)
-            ultimo = elemento
             lista.append(elemento)
-        ultimo.liga_com(primeiro)
-        return primeiro, lista
+        return lista
 
-class Propriedade(Sequencia):
+class Propriedade(ItemJogo):
     """
     Uma propriedade é um imóvel ocupando
     uma posição (ou `casa`) no tabuleiro
@@ -37,19 +24,19 @@ class Propriedade(Sequencia):
     :valor_aluguel  recebe um valor parecido, só que menor..
     """
     def __init__(self, numero):
-        super().__init__()
         self.numero = numero
         self.custo_venda = random.randrange(100, 200)
-        self.valor_aluguel = random.randrange(30, 60)
+        self.valor_aluguel = random.randrange(30, 90)
         self.dono = None
+    def cobra_aluguel(self, jogador):
+        jogador.saldo -= self.valor_aluguel
+        self.dono.ganha_bonus(self.valor_aluguel)
 
-class Jogador(Sequencia):
+class Jogador(ItemJogo):
     def __init__(self, comportamento):
-        super().__init__()
         self.comportamento = comportamento()
         self.saldo = 300
-        self.posicao = None
-        self.turno = 0
+        self.posicao = 0
     def decide_compra(self, propriedade):
         deve_comprar = self.comportamento.deve_comprar(
             propriedade,
@@ -58,39 +45,27 @@ class Jogador(Sequencia):
         if deve_comprar:
             self.saldo -= propriedade.custo_venda
             propriedade.dono = self
-    def paga_aluguel(self, propriedade):
-        valor = propriedade.valor_aluguel
-        self.saldo -= valor
-        propriedade.dono.ganha_bonus(valor)
     def ganha_bonus(self, valor):
         self.saldo += valor
-    def move(self, movimento, jogo):
+    def movimenta(self, distancia, jogo):
         """
         Aqui `casa` também é uma Propriedade,
         mas é tratada como um espaço no tabuleiro
-        ...
-        Quanto ao movimento casa-por-casa,
-        apesar de menos elegante, pode permitir
-        eventos que ocorrem `ao passar` por uma casa
         """
-        casa = self.posicao
-        if casa is None:
-            casa = jogo.primeira_casa
-        while movimento:
-            casa = casa.proximo
-            if casa == jogo.primeira_casa:
-                self.ganha_bonus(100) #--- Completou uma volta!
-            movimento -= 1
-        self.posicao = casa
+        idx = self.posicao + distancia
+        if idx > CASAS_TABULEIRO:
+            self.ganha_bonus(100) #--- Completou uma volta!
+        idx %= CASAS_TABULEIRO
+        casa = jogo.tabuleiro[idx]
         if casa.dono:
             if casa.dono == self:
                 return
-            self.paga_aluguel(casa)
+            casa.cobra_aluguel(self)
             if self.saldo < 0:
                 jogo.remove_jogador(self)
         elif self.saldo >= casa.custo_venda:
             self.decide_compra(casa)
-
+        self.posicao = idx
 
 #-------- Comportamentos ------------------
 class Impulsivo:
@@ -114,52 +89,45 @@ class Aleatorio:
 class Jogo:
     def __init__(self):
         """
-        Cria e posiciona na primeira `casa`
-        do tabuleiro
+        Cria o tabuleiro e
         Também cria 4 jogadores:
         Um impulsivo, um exigente, um cauteloso
         e um de comportamento aleatório
         """
         self.rodadas = 0
         self.motivo = ''
-        primeira_casa, tabuleiro = Propriedade.get_sequencia(
-            range(20)
+        self.tabuleiro = Propriedade.get_elementos(
+            range(CASAS_TABULEIRO)
         )
-        self.primeira_casa = primeira_casa
-        self.tabuleiro = tabuleiro
-        jogador, jogadores_ativos = Jogador.get_sequencia([
+        self.jogadores_ativos = Jogador.get_elementos([
             Impulsivo,
             Exigente,
             Cauteloso,
             Aleatorio
         ])
-        self.jogador = jogador #-- Jogador atual
-        self.jogadores_ativos = jogadores_ativos
-    def rodada_completa(self, turno_atual):
-        for jogador in self.jogadores_ativos:
-            if jogador.turno != turno_atual:
-                return False
-        return True
+        self.idx_jogador = 0 #-- Jogador atual
     def proximo_turno(self):
         if not self.jogadores_ativos:
             raise Exception('Nenhum jogador ativo')
         elif len(self.jogadores_ativos) == 1:
             return self.encerra_jogo('WO')
             #      ^^^---- vitória por W.O.
-        self.jogador.move(random.randint(1, 6), self)
-        self.jogador.turno += 1
-        if self.rodada_completa(self.jogador.turno):
+        idx = self.idx_jogador
+        jogador = self.jogadores_ativos[idx]
+        jogador.movimenta(random.randint(1, 6), self)
+        idx += 1
+        if idx >= len(self.jogadores_ativos):
             self.rodadas += 1
             if self.rodadas >= LIMITE_RODADAS:
                 return self.encerra_jogo('TimeOut')
-        self.jogador = self.jogador.proximo
+            idx = 0
+        self.idx_jogador = idx
         return None
     def remove_jogador(self, perdedor):
         self.jogadores_ativos.remove(perdedor)
         for casa in self.tabuleiro:
             if casa.dono == perdedor:
                 casa.dono = None
-        perdedor.anterior.liga_com(perdedor.proximo)
     def encerra_jogo(self, motivo):
         """
         `jogadores_ativos` está em ordem de turno
@@ -182,7 +150,7 @@ def executa_simulacoes(qt_jogos=300):
         vencedor = None
         while not vencedor:
             vencedor = jogo.proximo_turno()
-        soma_turnos += vencedor.turno
+            soma_turnos += 1
         partidas[jogo.motivo] = partidas.get(jogo.motivo, 0) + 1
         tipo_jogador = vencedor.comportamento.__class__.__name__
         vitorias[tipo_jogador] = vitorias.get(tipo_jogador, 0) + 1
