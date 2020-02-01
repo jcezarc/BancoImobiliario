@@ -31,13 +31,13 @@ class Propriedade(Sequencia):
     uma posição (ou `casa`) no tabuleiro
     :numero é como se fosse a numeração da rua 
             (para debug/logging...)
-    :valor_venda recebe um valor qualquer, apenas como exemplo
+    :custo_venda recebe um valor qualquer, apenas como exemplo
     :valor_aluguel  recebe um valor parecido, só que menor..
     """
     def __init__(self, numero):
         super().__init__()
         self.numero = numero
-        self.valor_venda = random.randrange(100, 200)
+        self.custo_venda = random.randrange(100, 200)
         self.valor_aluguel = random.randrange(30, 60)
         self.dono = None
 
@@ -54,7 +54,7 @@ class Jogador(Sequencia):
             self
         )
         if deve_comprar:
-            self.saldo -= propriedade.valor_venda
+            self.saldo -= propriedade.custo_venda
             propriedade.dono = self
     def paga_aluguel(self, propriedade):
         valor = propriedade.valor_aluguel
@@ -81,10 +81,12 @@ class Jogador(Sequencia):
         if casa == jogo.primeira_casa:
             self.ganha_bonus(100) #--- Completou uma volta!
         if casa.dono:
+            if casa.dono == self:
+                return
             self.paga_aluguel(casa)
             if self.saldo < 0:
                 jogo.remove_jogador(self)
-        elif self.saldo >= casa.valor_venda:
+        elif self.saldo >= casa.custo_venda:
             self.decide_compra(casa)
 
 
@@ -99,7 +101,7 @@ class Exigente:
 
 class Cauteloso:
     def deve_comprar(self, propriedade, jogador):
-        reserva = jogador.saldo - propriedade.valor_venda
+        reserva = jogador.saldo - propriedade.custo_venda
         return reserva >= 80
 
 class Aleatorio:
@@ -118,19 +120,19 @@ class Jogo:
         """
         self.rodadas = 0
         self.motivo = ''
-        casa, tabuleiro = Propriedade.get_sequencia(
+        primeira_casa, tabuleiro = Propriedade.get_sequencia(
             range(20)
         )
-        self.primeira_casa = casa
+        self.primeira_casa = primeira_casa
         self.tabuleiro = tabuleiro
-        jogador_atual, jogadores = Jogador.get_sequencia([
+        jogador, jogadores_ativos = Jogador.get_sequencia([
             Impulsivo,
             Exigente,
             Cauteloso,
             Aleatorio
         ])
-        self.jogador = jogador_atual
-        self.jogadores_ativos = jogadores
+        self.jogador = jogador #-- Jogador atual
+        self.jogadores_ativos = jogadores_ativos
     def rodada_completa(self, turno_atual):
         for jogador in self.jogadores_ativos:
             if jogador.turno != turno_atual:
@@ -187,7 +189,7 @@ def executa_simulacoes(qt_jogos=300):
     print('SIMULAÇÃO DE BANCO IMOBILIÁRIO')
     print('-'*50)
     print(
-        '\tPartidas que terminara em Time Out = ',
+        '\tPartidas que terminaram em Time Out = ',
         partidas.get('TimeOut', 0)
     )
     print('\tMédia de turnos = {:.2f}'.format(media_turnos))
