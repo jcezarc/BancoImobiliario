@@ -2,9 +2,9 @@
 Desafio para a simulação de um jogo de `Banco Imobiliário` simplificado
 
 ## Conceitos
-- *Turno* é a vez de UM jogador?
-- *Rodada* é quando todos os jogadores já jogaram uma vez?
-- *Simulações* é a quantidade de partidas que o programa vai rodar??
+- *Turno* é a vez de UM jogador
+- *Rodada* é quando todos os jogadores já jogaram uma vez
+- *Simulações* é a quantidade de partidas que o programa vai rodar
 
 
 ## Regras
