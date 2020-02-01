@@ -70,7 +70,7 @@ class Jogador(Sequencia):
         mas é tratada como um espaço no tabuleiro
         ...
         Quanto ao movimento casa-por-casa,
-        apesar de menos rápido, pode permitir
+        apesar de menos elegante, pode permitir
         futuras variações como `pedágio`
         """
         casa = self.posicao
