@@ -13,6 +13,8 @@ class Sequencia:
     def get_sequencia(cls, iteracoes):
         primeiro = None
         ultimo = None
+        if isinstance(iteracoes, list):
+            random.shuffle(iteracoes)
         lista = []
         for item in iteracoes:
             elemento = cls(item)

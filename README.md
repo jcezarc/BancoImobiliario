@@ -1,6 +1,13 @@
 # BancoImobiliario
 Desafio para a simulação de um jogo de `Banco Imobiliário` simplificado
 
+## Conceitos
+- *Turno* é a vez de UM jogador?
+- *Rodada* é quando todos os jogadores já jogaram uma vez?
+- *Simulações* é a quantidade de partidas que o programa vai rodar??
+
+
+## Regras
 Considere o seguinte jogo hipotético muito semelhante a Banco Imobiliário, onde várias de suas mecânicas
 foram simplificadas. Numa partida desse jogo, os jogadores se alteram em rodadas, numa ordem definida
 aleatoriamente no começo da partida. Os jogadores sempre começam uma partida com saldo de 300 para
@@ -38,6 +45,7 @@ O jogador aleatório compra a propriedade que ele parar em cima com probabilidad
 Caso o jogo demore muito, como é de costume em jogos dessa natureza, o jogo termina na milésima rodada
 com a vitória do jogador com mais saldo. O critério de desempate é a ordem de turno dos jogadores nesta
 partida.
+
 ## Saída
 Uma execução do programa proposto deve rodar 300 simulações, imprimindo no console os dados referentes
 às execuções. Esperamos encontrar nos dados as seguintes informações:
