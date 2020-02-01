@@ -80,7 +80,7 @@ class Jogador(Sequencia):
             casa = casa.proximo
             if casa == jogo.primeira_casa:
                 self.ganha_bonus(100) #--- Completou uma volta!
-            movimento -=  1
+            movimento -= 1
         self.posicao = casa
         if casa.dono:
             if casa.dono == self:
