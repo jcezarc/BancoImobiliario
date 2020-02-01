@@ -30,7 +30,7 @@ class Propriedade(ItemJogo):
         self.dono = None
     def cobra_aluguel(self, jogador):
         jogador.saldo -= self.valor_aluguel
-        self.dono.ganha_bonus(self.valor_aluguel)
+        self.dono.saldo += self.valor_aluguel
 
 class Jogador(ItemJogo):
     def __init__(self, comportamento):
@@ -45,8 +45,6 @@ class Jogador(ItemJogo):
         if deve_comprar:
             self.saldo -= propriedade.custo_venda
             propriedade.dono = self
-    def ganha_bonus(self, valor):
-        self.saldo += valor
     def movimenta(self, distancia, jogo):
         """
         Aqui `casa` também é uma Propriedade,
@@ -54,7 +52,7 @@ class Jogador(ItemJogo):
         """
         idx = self.posicao + distancia
         if idx > CASAS_TABULEIRO:
-            self.ganha_bonus(100) #--- Completou uma volta!
+            self.saldo += 100 #--- Completou uma volta!
         idx %= CASAS_TABULEIRO
         casa = jogo.tabuleiro[idx]
         if casa.dono:
