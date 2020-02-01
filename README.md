@@ -1,4 +1,4 @@
-# BancoImobiliario
+# Banco Imobiliario
 Desafio para a simulação de um jogo de `Banco Imobiliário` simplificado
 
 ## Conceitos
