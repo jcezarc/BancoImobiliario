@@ -1,5 +1,6 @@
 
-SILENCIAR = False
+SILENCIAR = True
+DEFAULT_QT_JOGOS = 300
 
 class Marcador:
     @staticmethod
@@ -89,7 +90,18 @@ class Marcador:
             func(*args, **kw)
         return wrapper
 
-def executa_simulacoes(classe_jogo, qt_jogos=300):
+def executa_simulacoes(classe_jogo, qt_jogos=None):
+    """
+    Executa as simulações do jogo conforme parametros
+    ...
+    :classe_jogo = Qual objeto-jogo deve ser
+            instanciado em cada simulação
+    :qt_jogos = Somente para o modo não-silencioso
+            (Se SILENCIAR for True,
+            usa a quantidade default)
+    """
+    if not qt_jogos or SILENCIAR:
+        qt_jogos = DEFAULT_QT_JOGOS
     partidas = {}
     vitorias = {}
     soma_turnos = 0
@@ -106,6 +118,7 @@ def executa_simulacoes(classe_jogo, qt_jogos=300):
     print('='*50)
     print('::::::::: RESUMO E ESTATISTICAS :::::::::')
     print('-'*50)
+    print('\tTotal de partidas = {}'.format(qt_jogos))
     print(
         '\tPartidas que terminaram em Time Out = ',
         partidas.get('TimeOut', 0)

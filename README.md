@@ -6,6 +6,10 @@ Desafio para a simulação de um jogo de `Banco Imobiliário` simplificado
 - *Rodada* é quando todos os jogadores já jogaram uma vez
 - *Simulações* é a quantidade de partidas que o programa vai rodar
 
+## Modo Silencioso
+ Para acompanhar todos os detalhes de cada turno do jogo, mude o valor da variável SILENCIAR para `False`
+    Caso contrário, 300 simulações rodarão em silêncio
+    e somente **no final** serão exibidos os resultados.
 
 ## Regras
 Considere o seguinte jogo hipotético muito semelhante a Banco Imobiliário, onde várias de suas mecânicas

@@ -43,12 +43,12 @@ class Jogador(ItemJogo):
         self.saldo -= propriedade.custo_venda
         propriedade.dono = self
     def decide_compra(self, propriedade):
-        deve_comprar = self.comportamento.deve_comprar(
+        if self.saldo < propriedade.custo_venda:
+            return False
+        return self.comportamento.deve_comprar(
             propriedade,
             self
         )
-        if deve_comprar:
-            self.realiza_compra(propriedade)
     @Marcador.ganha_bonus
     def ganha_bonus(self, valor):
         self.saldo += valor
@@ -67,8 +67,8 @@ class Jogador(ItemJogo):
                 casa.cobra_aluguel(self)
             if self.saldo < 0:
                 jogo.remove_jogador(self)
-        elif self.saldo >= casa.custo_venda:
-            self.decide_compra(casa)
+        elif self.decide_compra(casa):
+            self.realiza_compra(casa)
         self.posicao = idx
 
 #-------- Comportamentos ------------------
