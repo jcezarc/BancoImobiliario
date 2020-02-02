@@ -1,6 +1,7 @@
 
 SILENCIAR = True
 DEFAULT_QT_JOGOS = 300
+MAX_RODADAS = 1000
 
 class Marcador:
     @staticmethod
@@ -39,7 +40,7 @@ class Marcador:
             return func
         def wrapper(*args, **kw):
             jogo = args[0]
-            if len(args) == 2:
+            if len(args) > 1:
                 numero_jogo = args[1]
                 print('{} JOGO {} {}'.format(
                     '='*50,
@@ -102,11 +103,15 @@ def executa_simulacoes(classe_jogo, qt_jogos=None):
     """
     if not qt_jogos or SILENCIAR:
         qt_jogos = DEFAULT_QT_JOGOS
+    if SILENCIAR:
+        limite_rodadas = MAX_RODADAS
+    else:
+        limite_rodadas = 50 #-- p/ não gerar muitos prints
     partidas = {}
     vitorias = {}
     soma_turnos = 0
     for i in range(qt_jogos):
-        jogo = classe_jogo(i+1)
+        jogo = classe_jogo(i+1, limite_rodadas)
         vencedor = None
         while not vencedor:
             vencedor = jogo.atualiza()

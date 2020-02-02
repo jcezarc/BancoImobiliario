@@ -1,7 +1,6 @@
 import random
 from marcador import Marcador, executa_simulacoes
 
-LIMITE_RODADAS = 50
 CASAS_TABULEIRO = 20
 
 class ItemJogo:
@@ -92,7 +91,7 @@ class Aleatorio:
 
 class Jogo:
     @Marcador.proxima_rodada
-    def __init__(self, numero):
+    def __init__(self, numero, limite_rodadas):
         """
         Cria o tabuleiro e
         Também cria 4 jogadores,
@@ -110,6 +109,7 @@ class Jogo:
             Aleatorio
         ])
         self.idx_jogador = 0 #-- Jogador atual
+        self.limite_rodadas = limite_rodadas
     @Marcador.proxima_rodada
     def proxima_rodada(self):
         self.rodada += 1
@@ -125,7 +125,7 @@ class Jogo:
         idx += 1
         if idx >= len(self.jogadores_ativos):
             self.proxima_rodada()
-            if self.rodada >= LIMITE_RODADAS:
+            if self.rodada >= self.limite_rodadas:
                 return self.fim_de_jogo('TimeOut')
             idx = 0
         self.idx_jogador = idx
