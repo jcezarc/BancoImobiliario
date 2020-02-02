@@ -1,6 +1,7 @@
 import random
+from marcador import Marcador, executa_simulacoes
 
-LIMITE_RODADAS = 1000
+LIMITE_RODADAS = 50
 CASAS_TABULEIRO = 20
 
 class ItemJogo:
@@ -19,7 +20,6 @@ class Propriedade(ItemJogo):
     Uma propriedade é um imóvel ocupando
     uma posição (ou `casa`) no tabuleiro
     :numero é como se fosse a numeração da rua 
-            (para debug/logging...)
     :custo_venda recebe um valor qualquer, apenas como exemplo
     :valor_aluguel  recebe um valor parecido, só que menor..
     """
@@ -28,6 +28,7 @@ class Propriedade(ItemJogo):
         self.custo_venda = random.randrange(100, 200)
         self.valor_aluguel = random.randrange(30, 90)
         self.dono = None
+    @Marcador.cobra_aluguel
     def cobra_aluguel(self, jogador):
         jogador.saldo -= self.valor_aluguel
         self.dono.saldo += self.valor_aluguel
@@ -37,28 +38,33 @@ class Jogador(ItemJogo):
         self.comportamento = comportamento()
         self.saldo = 300
         self.posicao = 0
+    @Marcador.realiza_compra
+    def realiza_compra(self, propriedade):
+        self.saldo -= propriedade.custo_venda
+        propriedade.dono = self
     def decide_compra(self, propriedade):
         deve_comprar = self.comportamento.deve_comprar(
             propriedade,
             self
         )
         if deve_comprar:
-            self.saldo -= propriedade.custo_venda
-            propriedade.dono = self
+            self.realiza_compra(propriedade)
+    @Marcador.ganha_bonus
+    def ganha_bonus(self, valor):
+        self.saldo += valor
     def movimenta(self, distancia, jogo):
         """
         Aqui `casa` também é uma Propriedade,
         mas é tratada como um espaço no tabuleiro
         """
         idx = self.posicao + distancia
-        if idx > CASAS_TABULEIRO:
-            self.saldo += 100 #--- Completou uma volta!
-        idx %= CASAS_TABULEIRO
+        if idx >= CASAS_TABULEIRO:
+            self.ganha_bonus(100) #--- Completou uma volta!
+            idx %= CASAS_TABULEIRO
         casa = jogo.tabuleiro[idx]
         if casa.dono:
-            if casa.dono == self:
-                return
-            casa.cobra_aluguel(self)
+            if casa.dono != self:
+                casa.cobra_aluguel(self)
             if self.saldo < 0:
                 jogo.remove_jogador(self)
         elif self.saldo >= casa.custo_venda:
@@ -85,17 +91,17 @@ class Aleatorio:
 #--------------------------------------------
 
 class Jogo:
-    def __init__(self):
+    @Marcador.proxima_rodada
+    def __init__(self, numero):
         """
         Cria o tabuleiro e
-        Também cria 4 jogadores:
-        Um impulsivo, um exigente, um cauteloso
-        e um de comportamento aleatório
+        Também cria 4 jogadores,
+        um de cada comportamento
         """
-        self.rodadas = 0
+        self.rodada = 1
         self.motivo = ''
         self.tabuleiro = Propriedade.get_elementos(
-            range(CASAS_TABULEIRO)
+            range(1, CASAS_TABULEIRO + 1)
         )
         self.jogadores_ativos = Jogador.get_elementos([
             Impulsivo,
@@ -104,29 +110,34 @@ class Jogo:
             Aleatorio
         ])
         self.idx_jogador = 0 #-- Jogador atual
-    def proximo_turno(self):
+    @Marcador.proxima_rodada
+    def proxima_rodada(self):
+        self.rodada += 1
+    def atualiza(self):
         if not self.jogadores_ativos:
             raise Exception('Nenhum jogador ativo')
         elif len(self.jogadores_ativos) == 1:
-            return self.encerra_jogo('WO')
+            return self.fim_de_jogo('WO')
             #      ^^^---- vitória por W.O.
         idx = self.idx_jogador
         jogador = self.jogadores_ativos[idx]
         jogador.movimenta(random.randint(1, 6), self)
         idx += 1
         if idx >= len(self.jogadores_ativos):
-            self.rodadas += 1
-            if self.rodadas >= LIMITE_RODADAS:
-                return self.encerra_jogo('TimeOut')
+            self.proxima_rodada()
+            if self.rodada >= LIMITE_RODADAS:
+                return self.fim_de_jogo('TimeOut')
             idx = 0
         self.idx_jogador = idx
         return None
+    @Marcador.remove_jogador
     def remove_jogador(self, perdedor):
-        self.jogadores_ativos.remove(perdedor)
         for casa in self.tabuleiro:
             if casa.dono == perdedor:
                 casa.dono = None
-    def encerra_jogo(self, motivo):
+        self.jogadores_ativos.remove(perdedor)
+    @Marcador.fim_de_jogo
+    def fim_de_jogo(self, motivo):
         """
         `jogadores_ativos` está em ordem de turno
         portanto o primeiro a ser aclamado vencedor
@@ -139,40 +150,4 @@ class Jogo:
         self.motivo = motivo
         return vencedor
 
-def executa_simulacoes(qt_jogos=300):
-    partidas = {}
-    vitorias = {}
-    soma_turnos = 0
-    for i in range(qt_jogos):
-        jogo = Jogo()
-        vencedor = None
-        while not vencedor:
-            vencedor = jogo.proximo_turno()
-            soma_turnos += 1
-        partidas[jogo.motivo] = partidas.get(jogo.motivo, 0) + 1
-        tipo_jogador = vencedor.comportamento.__class__.__name__
-        vitorias[tipo_jogador] = vitorias.get(tipo_jogador, 0) + 1
-    media_turnos = soma_turnos / qt_jogos
-    print('='*50)
-    print('SIMULAÇÃO DE BANCO IMOBILIÁRIO')
-    print('-'*50)
-    print(
-        '\tPartidas que terminaram em Time Out = ',
-        partidas.get('TimeOut', 0)
-    )
-    print('\tMédia de turnos = {:.2f}'.format(media_turnos))
-    print('\tVitorias por tipo:')
-    melhor = None
-    for tipo in vitorias:
-        porcentagem = vitorias[tipo] / qt_jogos * 100
-        if not melhor or porcentagem > vitorias[melhor]:
-            melhor = tipo
-        print('\t\t {} = {:.2f}%'.format(
-            tipo,
-            porcentagem
-        ))
-        vitorias[tipo] = porcentagem
-    print('\tTipo que mais venceu = ', melhor)
-    print('-'*50)
-
-executa_simulacoes(300)
+executa_simulacoes(Jogo, 10)
