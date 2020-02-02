@@ -10,7 +10,7 @@ class Marcador:
         def wrapper(*args, **kw):
             casa = args[0]
             jogador = args[1]
-            print('\t[+] {} paga aluguel da casa {} para {} no valor de {:.2f}'.format(
+            print('\t(-) {} paga aluguel da casa {} para {} no valor de {:.2f}'.format(
                 jogador.comportamento.__class__.__name__,
                 casa.numero,
                 casa.dono.comportamento.__class__.__name__,
@@ -25,7 +25,7 @@ class Marcador:
         def wrapper(*args, **kw):
             jogador = args[0]
             casa = args[1]
-            print('\t(-) Casa {} vendida para {}: Saldo = {:.2f} - {:.2f}'.format(
+            print('\t[+] Casa {} vendida para {}: Saldo = {:.2f} - {:.2f}'.format(
                 casa.numero,
                 jogador.comportamento.__class__.__name__,
                 jogador.saldo,
