@@ -3,7 +3,9 @@ SILENCIAR = True
 DEFAULT_QT_JOGOS = 300
 MAX_RODADAS = 1000
 
+
 class Marcador:
+
     @staticmethod
     def cobra_aluguel(func):
         if SILENCIAR:
@@ -19,6 +21,7 @@ class Marcador:
             ))
             return func(*args, **kw)
         return wrapper
+
     @staticmethod
     def realiza_compra(func):
         if SILENCIAR:
@@ -34,6 +37,7 @@ class Marcador:
             ))
             return func(*args, **kw)
         return wrapper
+
     @staticmethod
     def proxima_rodada(func):
         if SILENCIAR:
@@ -50,6 +54,7 @@ class Marcador:
             func(*args, **kw)
             print('--------- Rodada {} ------------'.format(jogo.rodada))
         return wrapper
+
     @staticmethod
     def fim_de_jogo(func):
         if SILENCIAR:
@@ -65,6 +70,7 @@ class Marcador:
             ))
             return vencedor
         return wrapper
+
     @staticmethod
     def remove_jogador(func):
         if SILENCIAR:
@@ -76,6 +82,7 @@ class Marcador:
             ))
             func(*args, **kw)
         return wrapper
+
     @staticmethod
     def ganha_bonus(func):
         if SILENCIAR:
@@ -90,6 +97,7 @@ class Marcador:
             ))
             func(*args, **kw)
         return wrapper
+
 
 def executa_simulacoes(classe_jogo, qt_jogos=None):
     """

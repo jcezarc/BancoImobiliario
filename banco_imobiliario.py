@@ -3,7 +3,9 @@ from marcador import Marcador, executa_simulacoes
 
 CASAS_TABULEIRO = 20
 
+
 class ItemJogo:
+
     @classmethod
     def get_elementos(cls, iteracoes):
         if isinstance(iteracoes, list):
@@ -13,6 +15,7 @@ class ItemJogo:
             elemento = cls(item)
             lista.append(elemento)
         return lista
+
 
 class Propriedade(ItemJogo):
     """
@@ -27,20 +30,25 @@ class Propriedade(ItemJogo):
         self.custo_venda = random.randrange(100, 200)
         self.valor_aluguel = random.randrange(30, 90)
         self.dono = None
+        
     @Marcador.cobra_aluguel
     def cobra_aluguel(self, jogador):
         jogador.saldo -= self.valor_aluguel
         self.dono.saldo += self.valor_aluguel
 
+
 class Jogador(ItemJogo):
+
     def __init__(self, comportamento):
         self.comportamento = comportamento()
         self.saldo = 300
         self.posicao = 0
+
     @Marcador.realiza_compra
     def realiza_compra(self, propriedade):
         self.saldo -= propriedade.custo_venda
         propriedade.dono = self
+    
     def decide_compra(self, propriedade):
         if self.saldo < propriedade.custo_venda:
             return False
@@ -48,9 +56,11 @@ class Jogador(ItemJogo):
             propriedade,
             self
         )
+
     @Marcador.ganha_bonus
     def ganha_bonus(self, valor):
         self.saldo += valor
+
     def movimenta(self, distancia, jogo):
         """
         Aqui `casa` também é uma Propriedade,
@@ -70,26 +80,36 @@ class Jogador(ItemJogo):
             self.realiza_compra(casa)
         self.posicao = idx
 
+
 #-------- Comportamentos ------------------
 class Impulsivo:
+
     def deve_comprar(self, propriedade, jogador):
         return True
 
+
 class Exigente:
+
     def deve_comprar(self, propriedade, jogador):
         return propriedade.valor_aluguel > 50
 
+
 class Cauteloso:
+
     def deve_comprar(self, propriedade, jogador):
         reserva = jogador.saldo - propriedade.custo_venda
         return reserva >= 80
 
+
 class Aleatorio:
+
     def deve_comprar(self, propriedade, jogador):
         return bool(random.getrandbits(1))
 #--------------------------------------------
 
+
 class Jogo:
+
     @Marcador.proxima_rodada
     def __init__(self, numero, limite_rodadas):
         """
@@ -110,9 +130,11 @@ class Jogo:
         ])
         self.idx_jogador = 0 #-- Jogador atual
         self.limite_rodadas = limite_rodadas
+
     @Marcador.proxima_rodada
     def proxima_rodada(self):
         self.rodada += 1
+
     def atualiza(self):
         if not self.jogadores_ativos:
             raise Exception('Nenhum jogador ativo')
@@ -130,12 +152,14 @@ class Jogo:
             idx = 0
         self.idx_jogador = idx
         return None
+
     @Marcador.remove_jogador
     def remove_jogador(self, perdedor):
         for casa in self.tabuleiro:
             if casa.dono == perdedor:
                 casa.dono = None
         self.jogadores_ativos.remove(perdedor)
+
     @Marcador.fim_de_jogo
     def fim_de_jogo(self, motivo):
         """
@@ -149,5 +173,6 @@ class Jogo:
                 vencedor = jogador
         self.motivo = motivo
         return vencedor
+
 
 executa_simulacoes(Jogo, 10)
