@@ -1,5 +1,6 @@
 import random
-from saida.marcador import Marcador, executa_simulacoes
+from saida.marcador import Marcador
+from saida.simulacoes import executa_simulacoes
 from modelo.comportamento import (
     Impulsivo,
     Exigente,
