@@ -8,7 +8,8 @@ Desafio para a simulação de um jogo de `Banco Imobiliário` simplificado
 
 ## Modo Silencioso
  Para acompanhar todos os detalhes de cada turno do jogo, mude o valor da variável SILENCIAR para `False`
-    Caso contrário, 300 simulações rodarão em silêncio
+ (em saida/marcador.py)
+- Caso contrário, 300 simulações rodarão em silêncio
     e somente **no final** serão exibidos os resultados.
 
 ## Regras
